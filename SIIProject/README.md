@@ -1,1 +1,2 @@
 Questa directory contiene i file del progetto "Studio di tecniche per aumentare artificialmente il numero di followers su Instagram" svolto per il corso di Sistemi Intelligenti per Internet nell'anno 2014/2015 da Matteo Amadei e Margherita Sidoti.
+Il progetto si basa sulla libreria jinstagram, trovata sempre qui su github. Le classi che abbiamo implementato sono contentute nella cartella org.sii (oltre ovviamente alle jsp)
