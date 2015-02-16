@@ -306,6 +306,72 @@ public class IncreaseFollowers {
 
 	}
 
+
+/*MetodoPer ricercare Utenti in base al tag*/
+	public void tagSearch(Instagram instagram,long cont,String index,String tagName) throws InstagramException{
+		Node node = nodeBuilder().node();
+		Client client = node.client();
+		TagMediaFeed tagMediaFeed = instagram.getRecentMediaTags(tagName, cont);
+		List<MediaFeedData> data = tagMediaFeed.getData();
+		int contatore = 4990;//il limite delle api è di 5000 richieste all'ora
+		int contaTag =0;
+		Pagination pagination;
+
+		while(contatore >0){
+			System.out.println("contatore+"+contatore);
+			if(contaTag>=32){
+				pagination = tagMediaFeed.getPagination();
+				tagMediaFeed =instagram.getTagMediaInfoNextPage(pagination);
+				data= tagMediaFeed.getData();
+				System.out.println("prossimo giro!!");
+
+			}
+			for (MediaFeedData m : data){
+				contaTag++;
+				String userId = m.getUser().getId();
+				if (analyzeReversed(followers(userId,instagram), following(userId,instagram))&& contatore>1){
+					if (userCounts(userId,instagram) >= 50){ //deve avere almeno 50 foto?
+						System.out.println("preso");
+						UserInfo infoUser =instagram.getUserInfo(userId);
+
+						int number=0;
+						MediaFeed media = instagram.getRecentMediaFeed(userId, 50, null, null, null, null);
+						List<MediaFeedData> elements = media.getData();
+						for (MediaFeedData mediaFeedData : elements){
+							contatore--;
+							if(isTags(mediaFeedData,instagram))//se c'è il tag foodporn food etc
+								number++;
+						}
+						UserWithNumbers user= new UserWithNumbers(infoUser,number);
+						
+						IndexResponse resp = client.prepareIndex(index, "utenti",userId)
+								.setSource(toJson(user))
+								.execute()
+								.actionGet();
+						System.out.println("inserito");
+					}
+				}	//end if analyze
+
+
+			} //end for
+			if (contatore <=2){
+				System.out.println("inizio stop");
+				try {
+					Thread.sleep(3600000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.println("fine stop");
+				contatore =4990;
+			}
+			//end while
+		} 
+		
+
+node.close();
+}
+
 	/*Metodo che dati una latitudine e una longitudine, 
 	 * trova le coordinate di punti a lui prossimi, iterativamente,
 	 * e li mappa in un quadrato*/
